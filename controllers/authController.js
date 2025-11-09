@@ -50,7 +50,7 @@ export const registerUser = async (req, res) => {
     }
 
 
-    const hashPassword = bcrypt.hash(password, 10);
+    const hashPassword = await bcrypt.hash(password, 10);
     
     
     const newUser = new User({ username, email, password : hashPassword });
@@ -62,4 +62,39 @@ export const registerUser = async (req, res) => {
     console.error("Registration error:", error);
     return res.status(500).json({ message: "Server error" });
    }    
+};
+
+export const getUserProfile = async (req, res) => {
+    try{
+        const userId = req.params.id;
+        const user = await User.findById(userId).select('-password');
+        if(!user){
+            return res.status(404).json({ message: "User not found" });
+        }
+        return res.status(200).json({ user });
+    }
+    catch(error){
+
+        console.error("Get profile error:", error);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
+export const updateUserProfile = async (req, res) => {
+    try{
+        const userId = req.params.id;
+        const { username, bio, photoUrl } = req.body;
+        const user = await User.findById(userId);
+        if(!user){
+            return res.status(404).json({ message: "User not found" });
+        } 
+        user.username = username || user.username;
+        user.bio = bio || user.bio;
+        user.photoUrl = photoUrl || user.photoUrl;  
+        await user.save();
+        return res.status(200).json({ message: "Profile updated successfully" });
+    }
+    catch(error){
+        console.error("Update profile error:", error);
+        return res.status(500).json({ message: "Server error" });
+    }
 };

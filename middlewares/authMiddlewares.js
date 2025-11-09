@@ -1,3 +1,5 @@
+import jwt from 'jsonwebtoken';
+
 export const ProtectRoute = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
@@ -7,8 +9,8 @@ export const ProtectRoute = (req, res, next) => {
     const token = authHeader.split(' ')[1];
 
     try{
-        token.verify(token, process.env.JWT_SECRET , {
-            expiredIn : '1d'
+        const decoded = jwt.verify(token, process.env.JWT_SECRET , {
+            expiresIn : '1d'
         });
         next();
     }
