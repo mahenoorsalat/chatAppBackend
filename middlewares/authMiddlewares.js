@@ -12,6 +12,7 @@ export const ProtectRoute = (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET , {
             expiresIn : '1d'
         });
+        req.userId = decoded.id;
         next();
     }
     catch(error){

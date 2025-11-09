@@ -1,4 +1,5 @@
 import User from "../models/userModels.js";
+import jwt from "jsonwebtoken";
 
 import bcrypt from "bcrypt";
 export const loginUser = async (req, res) => {
@@ -20,8 +21,13 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }   
 
+    const token = jwt.verify({ id: user._id }, process.env.JWT_SECRET , {
+        expiresIn : '1d'
+    });
+
  return res.status(200).json({
       message: "Login successful",
+      token,
       user: {
         id: user._id,
         username: user.username,
@@ -66,13 +72,20 @@ export const registerUser = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
     try{
-        const userId = req.params.id;
+        const userId = req.userId;
         const user = await User.findById(userId).select('-password');
         if(!user){
             return res.status(404).json({ message: "User not found" });
         }
-        return res.status(200).json({ user });
-    }
+return res.status(200).json({ 
+            user: {
+                id: user._id,
+                name: user.username,
+                email: user.email,
+                bio: user.bio,
+                photo: user.photoUrl,
+            }
+        });    }
     catch(error){
 
         console.error("Get profile error:", error);
@@ -81,7 +94,7 @@ export const getUserProfile = async (req, res) => {
 };
 export const updateUserProfile = async (req, res) => {
     try{
-        const userId = req.params.id;
+        const userId = req.userId;
         const { username, bio, photoUrl } = req.body;
         const user = await User.findById(userId);
         if(!user){
