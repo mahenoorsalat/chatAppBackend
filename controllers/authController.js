@@ -111,3 +111,22 @@ export const updateUserProfile = async (req, res) => {
         return res.status(500).json({ message: "Server error" });
     }
 };
+
+
+export const getAllUsers = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const users = await User.find({_id:{$ne : userId}}).select('_id username email bio photoUrl');
+        const formattedUsers= users.map(user => ({
+            id: user._id,
+            name: user.username,
+            email: user.email,
+            bio: user.bio,
+            photo: user.photoUrl,
+        })) ;
+        return res.status(200).json({ users: formattedUsers });
+    }catch (error) {
+        console.error("Get all users error:", error);
+        return res.status(500).json({ message: "Server error" });
+    }   
+};
